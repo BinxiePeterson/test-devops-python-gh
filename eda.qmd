@@ -1,0 +1,51 @@
+---
+title: "Penguins EDA"
+format:
+  html:
+    code-fold: true
+---
+
+# Load libraries
+```{python}
+import seaborn as sns
+from pandas import get_dummies
+import numpy as np
+import matplotlib.pyplot as plt
+```
+
+# Get the data
+```{python}
+import duckdb
+
+con = duckdb.connect('my-db.duckdb')
+df = sns.load_dataset("penguins").dropna()
+con.execute('CREATE TABLE IF NOT EXISTS penguins AS SELECT * FROM df')
+```
+
+# Data wrangling
+```{python}
+# Connect to the DuckDB database
+con = duckdb.connect(database='my-db.duckdb')
+
+# Run a SQL query to fetch data from the DuckDB file
+df = con.execute("SELECT * FROM penguins").fetchdf().dropna()
+
+# Group by species and sex, then calculate mean of numeric columns
+summary_df = df.groupby(['species', 'sex']).agg({'bill_length_mm': 'mean', 'body_mass_g': 'mean'}).reset_index()
+
+# Display summary table
+print(summary_df)
+```
+
+# Visualisation: Penguin Size vs Mass by Species
+```{python}
+# Plot using seaborn
+sns.scatterplot(data=df, x='bill_length_mm', y='body_mass_g', hue='species')
+sns.regplot(data=df, x='bill_length_mm', y='body_mass_g', scatter=False)
+plt.show()
+```
+
+```{python}
+# Close the connection
+con.close()
+```
