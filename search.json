@@ -1,0 +1,30 @@
+[
+  {
+    "objectID": "eda.html",
+    "href": "eda.html",
+    "title": "Penguins EDA",
+    "section": "",
+    "text": "Load libraries\n\n\nCode\nimport seaborn as sns\nfrom pandas import get_dummies\nimport numpy as np\nimport matplotlib.pyplot as plt\n\n\n\n\nGet the data\n\n\nCode\nimport duckdb\n\ncon = duckdb.connect('my-db.duckdb')\ndf = sns.load_dataset(\"penguins\").dropna()\ncon.execute('CREATE TABLE IF NOT EXISTS penguins AS SELECT * FROM df')\n\n\n&lt;duckdb.duckdb.DuckDBPyConnection at 0x780dee137c30&gt;\n\n\n\n\nData wrangling\n\n\nCode\n# Connect to the DuckDB database\ncon = duckdb.connect(database='my-db.duckdb')\n\n# Run a SQL query to fetch data from the DuckDB file\ndf = con.execute(\"SELECT * FROM penguins\").fetchdf().dropna()\n\n# Group by species and sex, then calculate mean of numeric columns\nsummary_df = df.groupby(['species', 'sex']).agg({'bill_length_mm': 'mean', 'body_mass_g': 'mean'}).reset_index()\n\n# Display summary table\nprint(summary_df)\n\n\n     species     sex  bill_length_mm  body_mass_g\n0     Adelie  Female       37.257534  3368.835616\n1     Adelie    Male       40.390411  4043.493151\n2  Chinstrap  Female       46.573529  3527.205882\n3  Chinstrap    Male       51.094118  3938.970588\n4     Gentoo  Female       45.563793  4679.741379\n5     Gentoo    Male       49.473770  5484.836066\n\n\n\n\nVisualisation: Penguin Size vs Mass by Species\n\n\nCode\n# Plot using seaborn\nsns.scatterplot(data=df, x='bill_length_mm', y='body_mass_g', hue='species')\nsns.regplot(data=df, x='bill_length_mm', y='body_mass_g', scatter=False)\nplt.show()\n\n\n\n\n\n\n\n\n\n\n\nCode\n# Close the connection\ncon.close()"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Penguin Predictor App",
+    "section": "",
+    "text": "This site shows the EDA of the palmerpenguins data."
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "Exploring the Palmer Penguins Data",
+    "section": "",
+    "text": "This site contains two pages of interest:\n\nEDA - to explore the palmerpenguins data.\nModel - to calculate statistical values after fitting a linear regression model on the data."
+  },
+  {
+    "objectID": "model.html",
+    "href": "model.html",
+    "title": "Model",
+    "section": "",
+    "text": "Code\nimport seaborn as sns\nfrom pandas import get_dummies\nimport numpy as np\nfrom sklearn.linear_model import LinearRegression\nfrom sklearn import preprocessing\n\n\n\nGet data\n\n\nCode\nimport duckdb\n\n# Connect to the DuckDB database\ncon = duckdb.connect(database='my-db.duckdb')\n\n# Run a SQL query to fetch data from the DuckDB file\ndf = con.sql(\"SELECT * FROM penguins\").fetchdf().dropna()\n\n# Close the connection\ncon.close()\n\n\n\n\nDefine model and fit\n\n\nCode\nX = get_dummies(df[['bill_length_mm', 'species', 'sex']], drop_first = True)\ny = df['body_mass_g']\n\nmodel = LinearRegression().fit(X, y)\n\n\n\n\nGet some information\n\n\nCode\nprint(f\"R^2 {model.score(X,y)}\")\nprint(f\"Intercept {model.intercept_}\")\nprint(f\"Columns {X.columns}\")\nprint(f\"Coefficients {model.coef_}\")\n\n\nR^2 0.8555368759537614\nIntercept 2169.269720939403\nColumns Index(['bill_length_mm', 'species_Chinstrap', 'species_Gentoo', 'sex_Male'], dtype='object')\nCoefficients [  32.53688677 -298.76553447 1094.86739145  547.36692408]"
+  }
+]
