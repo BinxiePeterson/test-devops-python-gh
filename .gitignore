@@ -4,3 +4,6 @@
 eda_files/
 model_files/
 env/
+
+/env/
+/.quarto/
